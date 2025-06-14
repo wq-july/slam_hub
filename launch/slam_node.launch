@@ -1,4 +1,13 @@
 <launch>
-  <node name="slam_node" pkg="slam_hub" type="slam_node" output="screen">
+  <!-- 设置ROS网络参数 -->
+  <env name="ROS_HOSTNAME" value="localhost"/>
+  
+  <!-- 启动slam_node节点 -->
+  <node name="slam_node" pkg="slam_hub" type="slam_node" output="screen" required="true">
+    <!-- 添加参数设置 -->
+    <param name="image_topic" value="/camera/image_raw" />
+    <param name="imu_topic" value="/imu/data_raw" />
+    <param name="can_topic" value="/can/wheel_speed" />
+    <param name="lidar_topic" value="/velodyne_points" />
   </node>
 </launch>

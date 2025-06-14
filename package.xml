@@ -2,7 +2,7 @@
   <name>slam_hub</name>
   <version>0.0.1</version>
   <description>The SLAM ROS interface for SDK</description>
-  <maintainer email="wq_july@example.com">Your Name</maintainer>
+  <maintainer email="wq_july@qq.com">Your Name</maintainer>
   <license>MIT</license>
 
   <buildtool_depend>catkin</buildtool_depend>
@@ -11,10 +11,12 @@
   <build_depend>nav_msgs</build_depend>
   <build_depend>std_msgs</build_depend>
   <build_depend>message_filters</build_depend>
+  <build_depend>message_generation</build_depend>
 
   <exec_depend>roscpp</exec_depend>
   <exec_depend>sensor_msgs</exec_depend>
   <exec_depend>nav_msgs</exec_depend>
   <exec_depend>std_msgs</exec_depend>
   <exec_depend>message_filters</exec_depend>
+  <exec_depend>message_runtime</exec_depend>
 </package>
