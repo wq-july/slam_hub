@@ -1,0 +1,22 @@
+<launch>
+  <!-- 启动 slam_node 节点，并支持 gdb 调试 -->
+  <node name="slam_node"
+        pkg="slam_hub"
+        type="localization_node"
+        output="screen"
+        required="true"
+        launch-prefix="gdb --args">
+
+    <!-- required="true" 节点崩溃，终止整个系统-->
+    <!-- respawn="true" 节点崩溃自动重启-->
+    <!-- GDB 调试下不要使用 respawn，否则会导致调试进程重启崩溃 launch-prefix="gdb __args"-->
+
+    <!-- 节点参数配置 -->
+    <param name="image_topic" value="/camera/image_raw" />
+    <param name="imu_topic" value="/imu/data_raw" />
+    <param name="can_topic" value="/can/wheel_speed" />
+    <param name="lidar_topic" value="/velodyne_points" />
+    <param name="connection_timeout" value="5.0" />
+    
+  </node>
+</launch>

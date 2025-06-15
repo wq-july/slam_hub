@@ -1,6 +1,11 @@
 #include "slam_hub.h"
+#include "common/config/config_loader.hpp"
+#include "common/config/pb/Localiztion.pb.h"
 #include "common/data_type/can.hpp"
+#include "common/tools/log/logger.hpp"
 #include <unordered_map>
+
+using namespace SLAM::Common;
 
 namespace SLAM {
 namespace Localization {
@@ -13,14 +18,16 @@ SlamHub::SlamHub() : nh_("~"), spinner_(10) {
   nh_.param("can_topic", can_topic, std::string("/can/wheel_speed"));
   nh_.param("lidar_topic", lidar_topic, std::string("/velodyne_points"));
 
-  // 初始化SDK，SDK初始化函数就一直在跑，一直等待数据过来进行处理
-  // 创建DR配置
-  SLAM::Localization::DRConfig dr_config;
-  auto *imu_config = dr_config.mutable_imu_predict_config();
+  SLAM::Localization::LocalizationConfig config;
+  if (!LoadConfigFromTextFile("/home/wq/Project/slam_hub_ws/src/slam_hub/"
+                              "config/localization.conf",
+                              &config)) {
+    WQ_ERROR(WQ) << "Read config failed!";
+    return;
+  }
 
-  // 初始化DeadReckoning对象
-  dead_reckoning_ =
-      std::make_unique<SLAM::Localization::DeadReckoning>(dr_config);
+  // 构造函数完成时，各个模块就已经在运行了
+  system_ = std::make_unique<SLAM::Localization::LocSystem>(config);
 
   // 设置消息过滤器和订阅者
   image_sub_.subscribe(nh_, image_topic, 10);
@@ -42,8 +49,10 @@ SlamHub::SlamHub() : nh_("~"), spinner_(10) {
 void SlamHub::SetImu(const sensor_msgs::ImuConstPtr &msg) {
   // 将ROS IMU消息转换为SLAM SDK的IMU类型
   SLAM::Localization::Imu imu_data;
-  imu_data.meas_ts_ms = msg->header.stamp.sec;
-  imu_data.recv_time = ros::Time::now().toNSec();
+  // 正确设置时间戳
+  imu_data.meas_ts_s = msg->header.stamp.toSec();   // 秒单位
+  imu_data.meas_ts_ns = msg->header.stamp.toNSec(); // 纳秒单位
+  imu_data.recv_ts_ns = ros::Time::now().toNSec();
 
   // 设置角速度
   imu_data.gyr.x() = msg->angular_velocity.x;
@@ -55,9 +64,8 @@ void SlamHub::SetImu(const sensor_msgs::ImuConstPtr &msg) {
   imu_data.acc.y() = msg->linear_acceleration.y;
   imu_data.acc.z() = msg->linear_acceleration.z;
 
-  // 传递给Dead Reckoning处理
-  if (dead_reckoning_) {
-    dead_reckoning_->SetIMU(imu_data);
+  if (system_) {
+    system_->SetImu(msg->header.stamp.toNSec(), imu_data);
   }
 }
 
@@ -65,7 +73,9 @@ void SlamHub::SetImu(const sensor_msgs::ImuConstPtr &msg) {
 void SlamHub::SetCan(const slam_hub::can::ConstPtr &msg) {
   SLAM::Localization::Can can;
 
-  can.mea_ts_ms = msg->header.stamp.sec;
+  // 正确设置时间戳
+  can.meas_ts_ns = msg->header.stamp.toNSec(); // 纳秒单位
+  can.meas_ts_s = msg->header.stamp.toSec();   // 秒单位
   can.recv_ts_ns = ros::Time::now().toNSec();
 
   const static std::unordered_map<int, double> dir_map = {
@@ -75,9 +85,8 @@ void SlamHub::SetCan(const slam_hub::can::ConstPtr &msg) {
   can.velocity_rr =
       msg->rear_right_speed * dir_map.at(msg->rear_right_direction);
 
-  // 传递给Dead Reckoning处理
-  if (dead_reckoning_) {
-    dead_reckoning_->SetCan(can);
+  if (system_) {
+    system_->SetCan(msg->header.stamp.toNSec(), can);
   }
 }
 

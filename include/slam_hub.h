@@ -12,8 +12,8 @@
 #include <memory>
 
 // 引入 slam_sdk 的 DeadReckoning 类
-#include "common/config/pb/dr_config.pb.h"
-#include "modules/dead_reckoning/dead_reckoning.h"
+#include "common/config/pb/Localiztion.pb.h"
+#include "modules/system/localization_system.h"
 
 namespace SLAM {
 namespace Localization {
@@ -47,7 +47,7 @@ private:
   message_filters::Subscriber<sensor_msgs::PointCloud2> lidar_sub_;
 
   // SLAM算法
-  std::unique_ptr<SLAM::Localization::DeadReckoning> dead_reckoning_;
+  std::unique_ptr<SLAM::Localization::LocSystem> system_;
 };
 
 } // namespace Localization

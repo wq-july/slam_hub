@@ -11,7 +11,7 @@ int main(int argc, char **argv) {
   // 2. 单个日志文件的最大大小（MB）
   // 3. 最大保留的日志文件数量
   // 目录：logs，单个文件最大50MB，最多保留5个文件
-  LogManager::Init("logs", 50, 5);
+  LogManager::Init("/home/wq/Project/slam_hub_ws/logs", 50, 5);
 
   SlamHub localization_node;
 
