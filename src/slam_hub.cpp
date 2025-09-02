@@ -19,9 +19,9 @@ SlamHub::SlamHub() : nh_("~"), spinner_(10) {
   nh_.param("lidar_topic", lidar_topic, std::string("/velodyne_points"));
 
   SLAM::Localization::LocalizationConfig config;
-  if (!LoadConfigFromTextFile("/home/wq/Project/slam_hub_ws/src/slam_hub/"
-                              "config/localization.conf",
-                              &config)) {
+  if (!LoadConfigFromTextFile(
+          "/home/wq/Project/slam/src/slam_hub/config/localization.conf",
+          &config)) {
     WQ_ERROR(WQ) << "Read config failed!";
     return;
   }
